@@ -77,7 +77,7 @@ import struct
 import time
 import logging 
 
-logging.basicConfig(filename='logs/temperature.log', filemode='a', format='%(created)f %(message)s', level=logging.INFO) 
+logging.basicConfig(filename='/var/log/temperature.log', filemode='a', format='%(created)f %(message)s', level=logging.INFO) 
 dev = usb.core.find(idVendor=0x16C0, idProduct=0x0480)
 
 if dev is None:
@@ -97,5 +97,105 @@ while True:
     logging.info('SensorAmount=%d and Sensor=%d and Temp=%.1f and Power=%s' % (data[0], data[1], temp, pwr))
     time.sleep(1)
 ```
+
+## Setting up InfluxDb and telegraf
+```bash
+sudo wget -O - https://packages.grafana.com/gpg.key | apt-key add -
+sudo wget -O - https://repos.influxdata.com/influxdb.key | apt-key add -
+
+wget -qO- https://repos.influxdata.com/influxdb.key | sudo tee /etc/apt/sources.list.d/influxdb.list test $VERSION_ID = "8" && echo "deb https://repos.influxdata.com/debian jessie stable" | sudo tee /etc/apt/sources.list.d/influxdb.list test $VERSION_ID = "9" && echo "deb https://repos.influxdata.com/debian stretch stable" | sudo tee /etc/apt/sources.list.d/influxdb.list 
+
+sudo apt-get update && sudo apt-get install influxdb 
+sudo service influxdb start 
+
+#verify influxdb is running with the following command. 
+sudo service influxdb status 
+```
+### TELGRAF LOG PARSER INSTALLATION ON RASPBERRY PI
+```bash
+ wget https://dl.influxdata.com/telegraf/releases/telegraf_1.16.2-1_armhf.deb
+ sudo dpkg -i telegraf_1.16.2-1_armhf.deb
+```
+
+### PARSING LOGS ON RASPBERRY PI USING TELEGRAF
+```bash
+mkdir -p /etc/telegraf/config
+touch /etc/telegraf/config/temperatureLog.conf
+```
+
+temperatureLog.conf
+```
+[agent]
+   # Batch size of values that Telegraf sends to output plugins.
+   metric_batch_size = 1000
+   # Default data collection interval for inputs.
+   interval = "10s"
+   # Added degree of randomness in the collection interval.
+   collection_jitter = "5s"
+   # Send output every 5 seconds
+   flush_interval = "5s"
+   # Buffer size for failed writes.
+   metric_buffer_limit = 10000
+   # Run in quiet mode, i.e don't display anything on the console.
+   quiet = true
+ 
+# Read metrics about cpu usage
+[[inputs.cpu]]
+   ## Whether to report per-cpu stats or not
+   percpu = false
+   ## Whether to report total system cpu stats or not
+   totalcpu = true
+   ## If true, collect raw CPU time metrics.
+   collect_cpu_time = false
+   ## If true, compute and report the sum of all non-idle CPU states.
+   report_active = false
+
+[[inputs.logparser]]
+   ## file(s) to read:
+   files = ["/var/log/temperature.log"]
+    
+   # Only send these fields to the output plugins
+   fieldpass = ["sensoramount", "sensor", "temperature", "power"]
+   tagexclude = ["path"]
+
+   # Read the file from beginning on telegraf startup.
+   from_beginning = true
+   name_override = "room_temperature_humidity"
+
+   ## For parsing logstash-style "grok" patterns:
+   [inputs.logparser.grok]
+     patterns = ["%{TEMPERATURE_PATTERN}"]
+     custom_patterns = '''
+       TEMPERATURE_PATTERN %{NUMBER:timestamp:ts-epoch} SensorAmount=%{NUMBER:sensoramount:integer} Sensor=%{NUMBER:sensor:integer} Temp=%{NUMBER:temperature:float} Power=%{WORD:power}
+     '''
+
+[[outputs.influxdb]]
+   ## The full HTTP or UDP URL for your InfluxDB instance.
+   urls = ["http://127.0.0.1:8086"] # required
+   
+   ## The target database for metrics (telegraf will create it if not exists).
+   database = "temperature" # required
+   
+   ## Name of existing retention policy to write to.  Empty string writes to
+   ## the default retention policy.
+   retention_policy = ""
+   ## Write consistency (clusters only), can be: "any", "one", "quorum", "all"
+   write_consistency = "any"
+   
+   ## Write timeout (for the InfluxDB client), formatted as a string.
+   ## If not provided, will default to 5s. 0s means no timeout (not recommended).
+   timeout = "10s"
+   # username = "telegraf"
+   # password = "metricsmetricsmetricsmetrics"
+   ## Set the user agent for HTTP POSTs (can be useful for log differentiation)
+   # user_agent = "telegraf"
+   ## Set UDP payload size, defaults to InfluxDB UDP Client default (512 bytes)
+   # udp_payload = 512
+
+```
+
+
+
+
 
 
