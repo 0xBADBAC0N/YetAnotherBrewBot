@@ -77,7 +77,7 @@ import struct
 import time
 import logging 
 
-logging.basicConfig(filename='temperature.log', filemode='a', format='%(created)f %(message)s', level=logging.INFO) 
+logging.basicConfig(filename='logs/temperature.log', filemode='a', format='%(created)f %(message)s', level=logging.INFO) 
 dev = usb.core.find(idVendor=0x16C0, idProduct=0x0480)
 
 if dev is None:
@@ -94,7 +94,7 @@ while True:
     unpacked = struct.unpack('<H', bytes(data[4:6]))
     temp = unpacked[0] / 10
     pwr = 'E' if data[2] == 1 else 'P'
-    logging.info('SensorAmount={} and Sensor={} and Temp={} and Power={}'.format(data[0], data[1], temp, pwr))
+    logging.info('SensorAmount=%d and Sensor=%d and Temp=%.1f and Power=%s' % (data[0], data[1], temp, pwr))
     time.sleep(1)
 ```
 
