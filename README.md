@@ -202,5 +202,8 @@ Setup influx dbas data source: http://192.168.0.17:3000/datasources
 > your local influc db url is http://localhost:8086 and the db name is temperature
 Save :)
 
-
+raw influxdb querie for grafana:
+```
+SELECT mean("temperature") FROM "boiler_temperature" WHERE sensor=1 and $timeFilter GROUP BY time($__interval) fill(previous)
+```
 
