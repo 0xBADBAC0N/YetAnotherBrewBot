@@ -16,7 +16,7 @@
 
 ## Temeprature sensors setup
 https://www.amazon.de/dp/B018GQN5HE
-```
+```bash
 apt-get install libusb-dev
  sudo nano /etc/udev/rules.d/99-myhid.rules
  KERNEL=="hidraw*", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="480",  MODE="0666", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
@@ -26,7 +26,7 @@ sudo udevadm control --reload-rules
 pip3 install pyusb
 ```
 test code
-```
+```python
 import os
 import sys
 import usb.core
@@ -58,4 +58,44 @@ while True:
     print('sensor %d of %d: %+.1f degC (pwr: %s)' % (data[0], data[1], temp, pwr))
     time.sleep(1)
 ```
+
+
+### storing time data
+```bash
+sudo apt-get install build-essential python3-dev
+
+
+```
+
+```python
+#! /usr/local/bin/python3.8
+import os
+import sys
+import usb.core
+import usb.util
+import struct
+import time
+import logging 
+
+logging.basicConfig(filename='temperature.log', filemode='a', format='%(created)f %(message)s', level=logging.INFO) 
+dev = usb.core.find(idVendor=0x16C0, idProduct=0x0480)
+
+if dev is None:
+    raise ValueError('Device is not found')
+
+if dev.is_kernel_driver_active(0):
+    dev.detach_kernel_driver(0)
+
+cfg = dev.get_active_configuration()
+intf = cfg[(0, 0)]
+
+while True:
+    data = dev.read(0x81, 64, 2000)
+    unpacked = struct.unpack('<H', bytes(data[4:6]))
+    temp = unpacked[0] / 10
+    pwr = 'E' if data[2] == 1 else 'P'
+    logging.info('SensorAmount={} and Sensor={} and Temp={} and Power={}'.format(data[0], data[1], temp, pwr))
+    time.sleep(1)
+```
+
 
