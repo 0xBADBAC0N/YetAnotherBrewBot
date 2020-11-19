@@ -17,6 +17,7 @@
 ## Temeprature sensors setup
 https://www.amazon.de/dp/B018GQN5HE
 ```
+apt-get install libusb-dev
  sudo nano /etc/udev/rules.d/99-myhid.rules
  KERNEL=="hidraw*", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="480",  MODE="0666", GROUP="plugdev", TAG+="uaccess", TAG+="udev-acl"
 sudo addgroup plugdev
