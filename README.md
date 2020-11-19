@@ -63,8 +63,6 @@ while True:
 ### storing time data
 ```bash
 sudo apt-get install build-essential python3-dev
-
-
 ```
 
 ```python
@@ -160,14 +158,12 @@ temperatureLog.conf
 
    # Read the file from beginning on telegraf startup.
    from_beginning = true
-   name_override = "room_temperature_humidity"
+   name_override = "boiler_temperature"
 
    ## For parsing logstash-style "grok" patterns:
    [inputs.logparser.grok]
      patterns = ["%{TEMPERATURE_PATTERN}"]
-     custom_patterns = '''
-       TEMPERATURE_PATTERN %{NUMBER:timestamp:ts-epoch} SensorAmount=%{NUMBER:sensoramount:integer} Sensor=%{NUMBER:sensor:integer} Temp=%{NUMBER:temperature:float} Power=%{WORD:power}
-     '''
+     custom_patterns = '''TEMPERATURE_PATTERN %{NUMBER:timestamp:ts-epoch} SensorAmount=%{NUMBER:sensoramount:int} and Sensor=%{NUMBER:sensor:int} and Temp=%{NUMBER:temperature:float}%{GREEDYDATA}'''
 
 [[outputs.influxdb]]
    ## The full HTTP or UDP URL for your InfluxDB instance.
@@ -193,9 +189,18 @@ temperatureLog.conf
    # udp_payload = 512
 
 ```
+start also in background `telegraf --config /etc/telegraf/config/temperatureLog.conf`
 
-
-
+### Installing Grafana and creating dashboards on the Raspberry Pi
+```bash
+sudo sed -i '2 s/^/# /' /etc/apt/sources.list
+sudo apt-get install grafana
+sudo service grafana-server start
+```
+Open: http://192.168.0.17:3000/login with admin:admin
+Setup influx dbas data source: http://192.168.0.17:3000/datasources
+> your local influc db url is http://localhost:8086 and the db name is temperature
+Save :)
 
 
 
