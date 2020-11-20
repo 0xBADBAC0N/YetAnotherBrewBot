@@ -163,7 +163,7 @@ temperatureLog.conf
    ## For parsing logstash-style "grok" patterns:
    [inputs.logparser.grok]
      patterns = ["%{TEMPERATURE_PATTERN}"]
-     custom_patterns = '''TEMPERATURE_PATTERN %{NUMBER:timestamp:ts-epoch} SensorAmount=%{NUMBER:sensoramount:int} and Sensor=%{NUMBER:sensor:int} and Temp=%{NUMBER:temperature:float}%{GREEDYDATA}'''
+     custom_patterns = '''TEMPERATURE_PATTERN %{{TIMESTAMP_ISO8601:timestamp} SensorAmount=%{NUMBER:sensoramount:int} and Sensor=%{NUMBER:sensor:int} and Temp=%{NUMBER:temperature:float}%{GREEDYDATA}'''
 
 [[outputs.influxdb]]
    ## The full HTTP or UDP URL for your InfluxDB instance.
