@@ -200,7 +200,7 @@ sudo service grafana-server start
 ```
 Open: http://192.168.0.17:3000/login with admin:admin
 Setup influx dbas data source: http://192.168.0.17:3000/datasources
-> your local influc db url is http://localhost:8086 and the db name is temperature
+> your local influx db url is http://localhost:8086 and the db name is temperature
 Save :)
 
 raw influxdb querie for grafana:
