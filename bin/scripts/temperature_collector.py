@@ -7,7 +7,7 @@ import usb.util
 
 logging.basicConfig(filename='/var/log/temperature.log',
                     filemode='a',
-                    format='%(created)f %(message)s',
+                    format='%(asctime)f %(message)s',
                     level=logging.INFO)
 dev = usb.core.find(idVendor=0x16C0, idProduct=0x0480)
 
