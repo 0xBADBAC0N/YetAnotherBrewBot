@@ -26,6 +26,7 @@ sudo udevadm control --reload-rules
 pip3 install pyusb
 ```
 test code
+> please use source venv/bin/activate
 ```python
 import os
 import sys
