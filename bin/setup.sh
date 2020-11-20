@@ -56,5 +56,3 @@ echo '---- Start processes'
 sudo screen -dmS telegraf bash -c './opt/yabb/scripts/temperature_collector.py; exec bash'
 sudo screen -dmS telegraf bash -c 'telegraf --config /opt/yabb/configs/telegraf/temperatureLog.conf; exec bash'
 sudo service grafana-server start
-
-
