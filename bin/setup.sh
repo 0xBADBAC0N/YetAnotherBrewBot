@@ -3,11 +3,11 @@
 
 apt upgrade
 echo '---- Setup working folder'
-sudo mkdir -p /opt/yabb/configs/telegraf
 sudo mkdir -p /opt/yabb/scripts
+sudo mkdir -p /var/log/temperature/
 
-sudo cp configs/temperatureLog.conf /opt/yabb/configs/telegraf/temperatureLog.conf
 sudo cp scripts/temperature_collector.py /opt/yabb/scripts/temperature_collector.py
+sudo cp service/temperature-collector.service /lib/systemd/system/temperature-collector.service
 
 
 echo '---- Setup UDEV rules RW for usb rawHID devide'
@@ -45,6 +45,9 @@ echo '---- Setup Telegraf'
 wget https://dl.influxdata.com/telegraf/releases/telegraf_1.16.2-1_armhf.deb
 sudo dpkg -i telegraf_1.16.2-1_armhf.deb
 
+rm /etc/telegraf/telegraf.conf
+sudo cp configs/temperatureLog.conf /etc/telegraf/telegraf.conf
+
 
 echo '---- Setup Grafana'
 # clean up duplicates in rpi sources
@@ -53,6 +56,17 @@ sudo apt install grafana
 
 
 echo '---- Start processes'
-sudo screen -dmS telegraf bash -c './opt/yabb/scripts/temperature_collector.py; exec bash'
-sudo screen -dmS telegraf bash -c 'telegraf --config /opt/yabb/configs/telegraf/temperatureLog.conf; exec bash'
-sudo service grafana-server start
+systemctl daemon-reload
+
+service grafana-server enable
+service grafana-server restart
+
+systemctl daemon-reload
+systemctl enable temperature-collector
+systemctl daemon-reload
+systemctl start temperature-collector
+systemctl status temperature-collector
+
+service telegraf.service enable
+service telegraf.service restart
+

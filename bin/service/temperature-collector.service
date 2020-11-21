@@ -1,0 +1,13 @@
+[Unit]
+Description=Temperature Collector
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=python3.8 /opt/yabb/scripts/temperature_collector.py
+Restart=always
+ExecReload=/bin/kill -- $MAINPID
+ExecStop=/bin/kill -- $MAINPID
+
+[Install]
+WantedBy=multi-user.target
