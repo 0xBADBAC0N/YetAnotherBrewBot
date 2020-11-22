@@ -4,7 +4,6 @@
 apt upgrade
 echo '---- Setup working folder'
 sudo mkdir -p /opt/yabb/scripts
-sudo mkdir -p /var/log/temperature/
 
 sudo cp scripts/temperature_collector.py /opt/yabb/scripts/temperature_collector.py
 sudo cp service/temperature-collector.service /lib/systemd/system/temperature-collector.service
@@ -41,21 +40,13 @@ sudo service influxdb start
 sudo service influxdb status
 
 
-echo '---- Setup Telegraf'
-wget https://dl.influxdata.com/telegraf/releases/telegraf_1.16.2-1_armhf.deb
-sudo dpkg -i telegraf_1.16.2-1_armhf.deb
-
-rm /etc/telegraf/telegraf.conf
-sudo cp configs/temperatureLog.conf /etc/telegraf/telegraf.conf
-
-
 echo '---- Setup Grafana'
 # clean up duplicates in rpi sources
 sudo sed -i '2 s/^/# /' /etc/apt/sources.list
 sudo apt install grafana
 
 
-echo '---- Start processes'
+echo '---- Start services'
 systemctl daemon-reload
 
 service grafana-server enable
@@ -67,6 +58,4 @@ systemctl daemon-reload
 systemctl start temperature-collector
 systemctl status temperature-collector
 
-service telegraf.service enable
-service telegraf.service restart
 

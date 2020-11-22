@@ -1,6 +1,6 @@
 [Unit]
 Description=Temperature Collector
-After=network.target
+After=influxdb.service
 
 [Service]
 Type=simple
